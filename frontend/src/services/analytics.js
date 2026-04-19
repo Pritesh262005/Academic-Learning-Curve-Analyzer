@@ -20,3 +20,8 @@ export async function getMySuggestions() {
   return data;
 }
 
+export async function getSubjectCurve(params = {}) {
+  const { data } = await api.get('/api/analytics/subject-curve', { params });
+  return data;
+}
+

@@ -63,5 +63,55 @@ async function mySuggestions(req, res) {
   });
 }
 
-module.exports = { classAverage, topperList, weakStudents, mySuggestions };
+async function subjectCurveAnalyzer(req, res) {
+  const subjectName = req.query.subject;
+  const threshold = Number(req.query.threshold || 45);
+  if (!subjectName) {
+    return res.status(400).json({ message: 'Subject name is required' });
+  }
+
+  const students = await Student.find({}).lean();
+  let weakList = [];
+  const buckets = {
+    '0-10': 0, '11-20': 0, '21-30': 0, '31-40': 0, '41-50': 0,
+    '51-60': 0, '61-70': 0, '71-80': 0, '81-90': 0, '91-100': 0
+  };
+
+  for (const s of students) {
+    const subjMarks = (s.marks || []).filter(m => m.subject === subjectName);
+    if (!subjMarks.length) continue;
+    
+    // safePercent from total score in this subject
+    const averagePercent = computeOverallAverage(subjMarks);
+    
+    if (averagePercent < threshold) {
+      weakList.push({ userId: s.userId, overall: averagePercent });
+    }
+
+    if (averagePercent <= 10) buckets['0-10']++;
+    else if (averagePercent <= 20) buckets['11-20']++;
+    else if (averagePercent <= 30) buckets['21-30']++;
+    else if (averagePercent <= 40) buckets['31-40']++;
+    else if (averagePercent <= 50) buckets['41-50']++;
+    else if (averagePercent <= 60) buckets['51-60']++;
+    else if (averagePercent <= 70) buckets['61-70']++;
+    else if (averagePercent <= 80) buckets['71-80']++;
+    else if (averagePercent <= 90) buckets['81-90']++;
+    else buckets['91-100']++;
+  }
+
+  const users = await User.find({ _id: { $in: weakList.map((r) => r.userId) } });
+  const byId = new Map(users.map((u) => [u._id.toString(), u.toSafeJSON()]));
+  
+  const curve = Object.entries(buckets).map(([range, count]) => ({ range, count }));
+  
+  res.json({
+    subject: subjectName,
+    threshold,
+    curve,
+    weakStudents: weakList.map(w => ({ overall: w.overall, user: byId.get(w.userId.toString()) })).sort((a,b) => a.overall - b.overall)
+  });
+}
+
+module.exports = { classAverage, topperList, weakStudents, mySuggestions, subjectCurveAnalyzer };
 

@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: almts-backend
+    env: node
+    buildCommand: npm install --workspace backend
+    startCommand: npm start --workspace backend
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CLIENT_ORIGIN
+        sync: false
