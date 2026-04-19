@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '../../components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
+import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 
 export function LoginPage() {
@@ -21,6 +22,9 @@ export function LoginPage() {
     try {
       const user = await login({ email, password });
       navigate(from || `/${user.role}`, { replace: true });
+    } catch (err) {
+      console.error('Login failed:', err);
+      toast.error(err.response?.data?.message || err.message || 'Login failed');
     } finally {
       setLoading(false);
     }

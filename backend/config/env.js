@@ -23,7 +23,9 @@ function getConfig() {
     jwtSecret: getEnv('JWT_SECRET'),
     jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
     bcryptSaltRounds: Number(process.env.BCRYPT_SALT_ROUNDS || 10),
-    clientOrigin: process.env.CLIENT_ORIGIN || 'http://localhost:5173',
+    clientOrigin: (process.env.CLIENT_ORIGIN || 'http://localhost:5173')
+      .split(',')
+      .map((s) => s.trim()),
     uploadsDir: process.env.UPLOADS_DIR || 'uploads',
   };
 }
