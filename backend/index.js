@@ -35,18 +35,20 @@ async function main() {
   const uploadsAbs = path.join(__dirname, config.uploadsDir);
   if (!fs.existsSync(uploadsAbs)) fs.mkdirSync(uploadsAbs, { recursive: true });
 
-  app.use(helmet());
-  app.use(compression());
-  app.use(morgan(config.nodeEnv === 'production' ? 'combined' : 'dev'));
-  app.use(express.json({ limit: '1mb' }));
-  app.use(express.urlencoded({ extended: true }));
-
   app.use(
     cors({
       origin: config.clientOrigin,
       credentials: true,
     })
   );
+
+  app.use(helmet());
+  app.use(compression());
+  app.use(morgan(config.nodeEnv === 'production' ? 'combined' : 'dev'));
+  app.use(express.json({ limit: '1mb' }));
+  app.use(express.urlencoded({ extended: true }));
+
+
 
   app.use('/uploads', express.static(uploadsAbs));
 
